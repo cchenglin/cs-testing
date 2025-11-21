@@ -1,0 +1,141 @@
+-- 建立資料庫
+CREATE DATABASE IF NOT EXISTS school_system;
+USE school_system;
+
+-- 建立學生帳號表格
+CREATE TABLE IF NOT EXISTS students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(50) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    grade VARCHAR(10),
+    classroom VARCHAR(10),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 建立老師帳號表格
+CREATE TABLE IF NOT EXISTS teachers (
+    teacher_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(50),
+    password VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- 插入 5 位老師的預設帳號密碼
+INSERT INTO teachers (username, password)
+VALUES
+('teacher1', 'password1'),
+('teacher2', 'password2'),
+('teacher3', 'password3'),
+('teacher4', 'password4'),
+('teacher5', 'password5');
+
+-- 建立裝置表格
+CREATE TABLE IF NOT EXISTS devices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  device_name VARCHAR(255),
+  device_pubkey_base64 TEXT,      -- 存 Secure Enclave 匯出的 public key (raw, base64)
+  attestation_json JSON NULL,     -- 可放 AppAttest / WebAuthn attestation if used
+  bind_ssid VARCHAR(255),
+  bind_ip VARCHAR(64),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_seen TIMESTAMP NULL,
+  FOREIGN KEY (student_id) REFERENCES students(student_id)
+);
+
+-- 建立 Nonce 表格
+CREATE TABLE IF NOT EXISTS nonces (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT,
+  class_id INT,
+  nonce VARCHAR(128),
+  issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP,
+  used BOOLEAN DEFAULT FALSE
+);
+
+-- 建立簽到紀錄表格
+CREATE TABLE IF NOT EXISTS attendance (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  class_id INT NOT NULL,
+  timestamp DATETIME,
+  ipfs_cid VARCHAR(255),
+  data_hash VARCHAR(128),
+  onchain_txhash VARCHAR(128),
+  verified_by_device BOOLEAN,
+  verification_meta JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ✅ 測試查詢 (檢查表格內容)
+SELECT '📘 TEACHERS TABLE' AS section;
+SELECT * FROM teachers;
+
+SELECT '📗 STUDENTS TABLE' AS section;
+SELECT * FROM students;
+
+SELECT '📱 DEVICES TABLE' AS section;
+SELECT * FROM devices;
+
+SELECT '🧩 NONCES TABLE' AS section;
+SELECT * FROM nonces;
+
+SELECT '🕒 ATTENDANCE TABLE' AS section;
+SELECT * FROM attendance;
+
+-- 課程表（老師建立課程）
+CREATE TABLE IF NOT EXISTS courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  teacher_id INT NOT NULL,
+  course_name VARCHAR(100) NOT NULL,
+  course_code VARCHAR(10) NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 學生選課表（學生加入課程）
+CREATE TABLE IF NOT EXISTS course_students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  student_id INT NOT NULL,
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 點名紀錄表（記錄學生是否簽到）
+CREATE TABLE IF NOT EXISTS attendance (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  student_id INT NOT NULL,
+  date DATE NOT NULL,
+  time TIME NOT NULL,
+  status ENUM('present', 'absent') DEFAULT 'absent'
+);
+
+CREATE TABLE attendance_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  start_time DATETIME NOT NULL,
+  end_time DATETIME NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+-- A. 建立點名場次表（每次老師按「開始點名」就新增一筆）
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  duration INT NULL,                 -- 秒數（可為 NULL）
+  is_open TINYINT(1) NOT NULL DEFAULT 1
+);
+
+-- B. 在課程表加上目前進行中的場次 id
+ALTER TABLE courses
+  ADD COLUMN current_session_id INT NULL AFTER is_attendance_open;
+
+-- C. 在簽到表加上 session_id（用來判斷「同一場」是否已簽到過）
+ALTER TABLE attendance
+  ADD COLUMN session_id INT NULL AFTER student_id;

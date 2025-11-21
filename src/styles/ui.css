@@ -1,0 +1,478 @@
+/* ================================
+   ✨ 強化互動版 UI 整合樣式
+   ================================ */
+
+:root {
+  /* 🌙 暗色主題（維持原樣） */
+  --bg: #0b1020;
+  --card: #121a2b;
+  --muted: #9aa4b2;
+  --text: #e8eef8;
+  --primary: #3b82f6;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --border: #1f2a44;
+  --ring: rgba(59, 130, 246, 0.35);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] {
+  /* ☀️ 亮色主題：活潑但不刺眼 */
+  --bg: #fdfdfd;
+  --card: #ffffff;
+  --text: #1e293b;
+  --border: #cbd5e1;
+  --muted: #64748b;
+  --primary: #2563eb; /* 明亮藍 */
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #f97316; /* 更溫暖的橘色 */
+  --ring: rgba(37, 99, 235, 0.3);
+  --shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+
+  /* 💫 背景：活潑柔光漸層 + 藍白柔焦效果 */
+  background: radial-gradient(
+      1200px 800px at 25% -10%, #1a2540 0%, #0b1020 60%
+    )
+    fixed;
+
+  color: var(--text);
+  transition: background 0.6s ease, color 0.6s ease;
+}
+body {
+  margin: 0;
+  background: radial-gradient(1200px 800px at 25% -10%, #1a2540 0%, #0b1020 60%) fixed;
+  color: var(--text);
+  font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  animation: fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ===== 頁面容器 ===== */
+.page {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  color: #f0f0f0;
+  background-color: transparent; /* 改這裡：讓它透明而非黑 */
+  font-family: "Noto Sans TC", sans-serif;
+}
+
+
+/* ===== 標題樣式 ===== */
+.section-title {
+  margin: 20px 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--primary);
+  border-left: 4px solid var(--primary);
+  padding-left: 8px;
+}
+
+/* ===== 卡片與懸浮效果 ===== */
+.card,
+.profile-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.card:hover,
+.profile-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 12px 25px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== 按鈕動畫 ===== */
+.btn {
+  appearance: none;
+  border: 1px solid transparent;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.btn:active {
+  transform: translateY(2px);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+.btn-primary:hover {
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-warning {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fff;
+}
+.btn-warning:hover {
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-success {
+  background: linear-gradient(180deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+.btn-success:hover {
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+.btn-danger:hover {
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px);
+}
+/* ===== 加入課程專屬動畫（流動漸層 + 輕微脈衝）===== */
+.btn-join {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+  background-size: 200% 100%;
+  animation: gradientSlide 4s linear infinite, pulse 2s ease-in-out infinite;
+}
+
+/* 漸層左右流動動畫 */
+@keyframes gradientSlide {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* 微脈衝效果（亮度閃爍） */
+@keyframes pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.25); }
+}
+
+/* ===== 返回鍵美化與定位 ===== */
+/* ===== 浮動返回鍵（右下角） ===== */
+.back-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 50px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  transition: all 0.25s ease;
+}
+.back-btn:hover {
+  background: rgba(96, 165, 250, 1);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+
+/* ===== 輸入框 ===== */
+.input {
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* ===== 表格動畫 ===== */
+.table-wrap {
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-top: 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== 小工具區 ===== */
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+
+/* ===== 狀態徽章 ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+.badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #bfffe4;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.badge-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ffd1d1;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ===== 課程清單項目 ===== */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.05);
+}
+.item-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+.item-sub {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+
+/* ===== Login Page 專用 ===== */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: relative;
+}
+/* 🌈 背景漸層動畫 */
+.animated-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(120deg, #0b1020, #1a2560, #0b1020, #1e3a8a);
+  background-size: 400% 400%;
+  animation: gradientMove 10s ease infinite;
+  filter: blur(60px);
+}
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* 登入容器 */
+.login-container {
+  text-align: center;
+  z-index: 1;
+}
+
+/* ===== 登入頁淡出動畫 ===== */
+.fade-out {
+  opacity: 0;
+  transform: scale(0.90);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* ===== Loading 遮罩與動畫 ===== */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 14px;
+  backdrop-filter: blur(3px);
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+
+@media (max-width: 600px) {
+  .table th, .table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+}
+
+/* ===== Session Explorer 強化 UI ===== */
+
+.session-info-card p {
+  font-size: 16px;
+  margin: 6px 0;
+}
+
+.stats-row {
+  display: flex;
+  gap: 14px;
+  margin-top: 15px;
+}
+
+.stats-box {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.stats-title {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.stats-value {
+  font-size: 26px;
+  font-weight: 800;
+  margin-top: 5px;
+}
+
+.stats-blue {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.stats-green {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+/* ===== 表格 Highlight ===== */
+.row-onchain-green {
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.row-onchain-warn {
+  background: rgba(250, 204, 21, 0.05);
+}
+
+/* ===== txHash 按鈕 ===== */
+.tx-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.tx-btn:hover {
+  color: #60a5fa;
+}
+
+/* ===== Modal 彈窗 ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  backdrop-filter: blur(4px);
+}
+.modal-box {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 500px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.modal-content {
+  margin-top: 10px;
+  background: rgba(255,255,255,0.04);
+  padding: 12px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 13px;
+  max-height: 300px;
+}
+.btn-back-blue {
+  background: linear-gradient(180deg, #1e3a8a, #1d4ed8);
+  color: white;
+  border: none;
+}
+.btn-back-blue:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(59,130,246,0.5);
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  margin-top: 8px;
+}

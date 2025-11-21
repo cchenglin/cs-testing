@@ -1,0 +1,450 @@
+/* ======================== 基本頁面容器 ======================== */
+.demo-page {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  padding-bottom: 60px;
+}
+
+.dim {
+  color: #9ca3af;
+}
+
+/* ======================== 流程框動畫區 ======================== */
+.step-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 720px;
+  margin: 30px auto;
+}
+
+.step-box {
+  padding: 16px 22px;
+  border: 2px solid #444;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #ddd;
+  font-size: 1.05rem;
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+/* 🔵 正在進行中 — 發光 & 進度條 */
+.step-box.active {
+  border-color: #00e0ff;
+  box-shadow: 0 0 14px #00e0ff;
+  color: #fff;
+  font-weight: bold;
+  animation: flowGlow 1.5s linear infinite;
+}
+
+.step-box.active::after {
+  /* 添加底部進度條 */
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #00e0ff, #22c55e);
+  animation: progressBar 1.5s linear infinite;
+}
+
+/* 🟢 已完成 — 綠色常亮 */
+.step-box.completed {
+  border-color: #22c55e;
+  background: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+  color: #b5ffe4;
+  font-weight: bold;
+}
+
+@keyframes progressBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+/* 🔒 最後一步 — 顯示一次性進度條動畫 */
+.step-box.final-step {
+  border-color: gold;
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffe57d;
+  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🌟 進度條動畫（只播放一次，停住不循環） */
+.step-box.final-step::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 5px;
+  width: 0%;
+  background: linear-gradient(90deg, #ffd700, #ffb300);
+  animation: progressBar 3s ease-in-out forwards; /* ⭐ forwards = 播完停住 */
+}
+
+@keyframes progressBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* ======================== 區塊鏈 Block 顯示 ======================== */
+.chain-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  margin: 40px auto;
+  padding: 25px;
+  width: 90%;
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  box-shadow: 0 0 28px rgba(0,0,0,0.2);
+}
+
+.block {
+  min-width: 360px;
+  max-width: 520px;
+  padding: 22px;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid #888;
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.6s ease;
+  font-size: 15px;
+}
+
+.block.visible {
+  opacity: 1;
+  transform: translateY(0px) scale(1);
+}
+
+/* 強化放大效果 */
+.block.zoom {
+  box-shadow: 0 0 30px #00e0ff;
+  animation: pulseZoom 2s infinite;
+}
+
+@keyframes pulseZoom {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* ======================== Merkle Tree 區 ======================== */
+.merkle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 25px auto;
+  padding: 12px;
+}
+
+.merkle-leaf, .merkle-node, .merkle-root {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: monospace;
+  background: rgba(0, 224, 255, 0.08);
+  border: 1px solid #00e0ff;
+  color: #00e0ff;
+  transition: all 0.4s ease-in-out;
+}
+
+.merkle-root {
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+  border-color: gold;
+  font-weight: bold;
+  animation: rootGlow 1.5s infinite alternate;
+}
+
+@keyframes rootGlow {
+  0% { box-shadow: 0 0 10px gold; }
+  100% { box-shadow: 0 0 35px gold; }
+}
+
+/* =====================================================
+   🎯 防篡改區塊展示區 (RWD + 高度動畫 4.0 電擊防護版)
+   ===================================================== */
+.attack-stage {
+  display: flex;
+  flex-wrap: wrap; /* 📱 手機可換行 */
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+  margin: 40px auto;
+  max-width: 980px;
+  width: 100%;
+  border-radius: 14px;
+  background: rgba(255, 50, 50, 0.06);
+  border: 1px solid rgba(255, 80, 80, 0.2);
+  box-shadow: 0 0 35px rgba(255, 50, 50, 0.1);
+}
+
+/* 📦區塊比較框架 (原始 / 偽造) */
+.block-compare {
+  flex: 1 1 420px;
+  min-width: 320px;
+  max-width: 460px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 15px rgba(255,255,255,0.15);
+  position: relative;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+  overflow: hidden;
+}
+
+.block-compare:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 25px rgba(255,255,255,0.3);
+}
+
+/* 🛡 原始區塊 — 安全防護 & 穩定閃爍 */
+.block-original {
+  border-color: #10b981;
+  box-shadow: 0 0 22px rgba(16,185,129,0.6);
+  animation: secureGlow 1.5s infinite alternate;
+}
+
+/* ✨ 安全綠光閃爍 */
+@keyframes secureGlow {
+  0% { box-shadow: 0 0 12px rgba(16,185,129,0.5); }
+  100% { box-shadow: 0 0 28px rgba(16,185,129,0.9); }
+}
+
+/* 🛡 防護盾標章 */
+.block-original::after {
+  content: "🛡 防護安全";
+  position: absolute;
+  bottom: 12px;
+  right: 15px;
+  background: rgba(16,185,129,0.25);
+  border: 1px solid #10b981;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8em;
+  color: #10b981;
+}
+
+/* 🚨 偽造竄改區塊 — 電擊抖動 & 紅色警示動畫 */
+.block-fake {
+  border-color: #ef4444;
+  animation: shake 0.6s ease-in-out infinite, redFlash 1.2s infinite alternate;
+  position: relative;
+}
+
+/* 🔥 電擊閃電效果 */
+.electric-effect {
+  position: absolute;
+  top: -25px;
+  right: 10px;
+  font-size: 48px;
+  color: #ffd200;
+  animation: electricZap 1.2s ease-in-out forwards;
+}
+
+@keyframes electricZap {
+  0% { transform: scale(0.6); opacity: 0.1; }
+  50% { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* ❌ 篡改失敗提示 */
+.verify-failed {
+  color: #ff5555;
+  font-weight: bold;
+  background: rgba(255, 50, 50, 0.12);
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+/* ≠ 篡改 Hash 高亮紅色 */
+.highlight-bad {
+  color: #ff5555;
+  background: rgba(255, 80, 80, 0.17);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* ✓ 正確 Hash 高亮綠色 */
+.highlight {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.18);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* 💥 搖動特效 — 偽造區塊 */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+/* 🚨 紅色閃光警告動畫 */
+@keyframes redFlash {
+  0% { box-shadow: 0 0 15px rgba(239,68,68,0.4); }
+  100% { box-shadow: 0 0 40px rgba(239,68,68,0.9); }
+}
+
+
+/* 🆙 讓 Hash 顯示完整、自動換行、不截斷 */
+.mono {
+  font-family: "Courier New", monospace;
+  word-break: break-all;       /* 長字串可換行 */
+  white-space: pre-wrap;       /* 保留格式並自動換行 */
+  font-size: 0.92rem;
+  display: block;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  text-align: left;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+
+/* 🔙 自訂返回按鈕 - 專業霧面藍色風格 */
+.back-btn {
+  margin-top: 30px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2563eb, #1e40af); /* 深淺藍漸層 */
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.28s ease-in-out;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.back-btn:hover {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  box-shadow: 0 0 12px rgba(59,130,246,0.7);
+  transform: translateY(-1px);
+}
+
+/* 🔘 行動裝置 RWD 按鈕調整 */
+@media (max-width: 480px) {
+  .back-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.05rem;
+  }
+}
+
+/* RWD 支援：手機小螢幕自動適配 */
+@media (max-width: 600px) {
+  .block, .block-compare, .step-box {
+    max-width: 100% !important;
+    min-width: 95% !important;
+    font-size: 0.9rem;
+  }
+}
+
+/* 🌟 Signer Highlight 色塊 */
+.highlight { 
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.18);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.highlight-bad {
+  color: #ff5555;
+  background: rgba(255, 80, 80, 0.17);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* ✔ 驗證通過標章 */
+.verify-ok {
+  background: rgba(16,185,129,0.18);
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* ⚡ 電擊動畫（偽造區塊） */
+.electric-effect {
+  position: absolute;
+  top: -25px;
+  right: 10px;
+  font-size: 48px;
+  color: #ffd200;
+  animation: electricZap 1.2s ease-in-out forwards;
+}
+
+@keyframes electricZap {
+  0% { transform: scale(0.8) rotate(0deg); opacity: 0.3; }
+  50% { transform: scale(1.4) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-5deg); opacity: 0; }
+}
+
+/* ============== 簽章驗證動畫區 ============== */
+
+.signature-verify-container {
+  padding: 24px;
+  max-width: 880px;
+  margin: 30px auto;
+  background: rgba(255,255,255,0.06);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 22px rgba(255,255,255,0.1);
+}
+
+.verify-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+.verify-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.verify-box {
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  width: 90%;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.arrow-flow {
+  font-size: 1.2rem;
+  color: #ffd500;
+  animation: arrowPulse 1.4s linear infinite;
+}
+
+.verify-result {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 1.1rem;
+}

@@ -1,0 +1,77 @@
+CREATE DATABASE IF NOT EXISTS attendance_system
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE attendance_system;
+
+SET NAMES utf8mb4;
+
+CREATE TABLE IF NOT EXISTS teachers (
+  teacher_id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  name VARCHAR(64) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS students (
+  student_id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  name VARCHAR(64) NOT NULL,
+  grade VARCHAR(16),
+  classroom VARCHAR(16),
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  teacher_id INT NOT NULL,
+  course_name VARCHAR(128) NOT NULL,
+  course_code VARCHAR(16) NOT NULL UNIQUE,
+  description TEXT,
+  is_attendance_open TINYINT(1) NOT NULL DEFAULT 0,
+  current_session_id INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS enrollments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_enroll (student_id, course_id)
+);
+
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  course_id INT NOT NULL,
+  started_at DATETIME NOT NULL,
+  duration INT NULL,
+  is_open TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  session_id INT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'absent',
+  date DATE NULL,
+  time TIME NULL,
+  signed_at DATETIME NULL,
+  ipfs_cid VARCHAR(255) NULL,
+  data_hash VARCHAR(66) NULL,
+  onchain_txhash VARCHAR(66) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS nonces (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  nonce VARCHAR(128) NOT NULL,
+  issued_at DATETIME NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

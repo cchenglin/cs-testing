@@ -1,0 +1,161 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-box {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.spinner {
+  margin: 10px auto;
+  border: 4px solid #eee;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* === 點名控制區細部美化 === */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap; /* ✅ 手機版自動換行 */
+  gap: 12px; /* ✅ 控制間距 */
+  margin-top: 10px;
+}
+
+.btn {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+/* 🟩 開始點名：亮綠 */
+.btn-success {
+  background-color: #22c55e;
+  border: none;
+  color: white;
+}
+.btn-success:hover {
+  background-color: #16a34a;
+  transform: scale(1.05);
+}
+
+/* 🩵 檢視上鏈狀態：亮藍 */
+.btn-info {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+.btn-info:hover {
+  background-color: #2563eb;
+  transform: scale(1.05);
+}
+
+/* 🔴 結束點名：柔紅 */
+.btn-danger {
+  background-color: #ef4444;
+  border: none;
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #dc2626;
+  transform: scale(1.05);
+}
+
+/* 🟨 Badge 樣式微調（更一致） */
+.badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: #22c55e;
+  color: white;
+}
+
+.badge-warning {
+  background-color: #facc15;
+  color: #1f2937;
+}
+
+.badge-secondary {
+  background-color: #9ca3af;
+  color: white;
+}
+
+/* ✅ RWD：手機按鈕變直排 */
+@media (max-width: 640px) {
+  .row {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
