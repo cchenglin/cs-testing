@@ -1,5 +1,7 @@
-console.log('目前使用的 API_BASE 是：', import.meta.env.VITE_API_BASE);
-alert('API_BASE 是：' + import.meta.env.VITE_API_BASE); // 手機會跳視窗
+console.log('VITE_API_BASE:', import.meta.env.VITE_API_BASE);
+console.log('VITE_TEST_HELLO:', import.meta.env.VITE_TEST_HELLO);
+
+alert('API_BASE: ' + import.meta.env.VITE_API_BASE + '\n測試變數: ' + import.meta.env.VITE_TEST_HELLO);
 
 // 小工具：統一 API_BASE、帶上 token、錯誤處理
 const API_BASE = import.meta.env.VITE_API_BASE;
