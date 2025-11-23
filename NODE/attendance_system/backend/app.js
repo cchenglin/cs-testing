@@ -36,14 +36,45 @@ console.log('File:', __filename);
 // ✅ 必須先宣告 app 才能使用 app.use()
 const app = express();
 const PORT = process.env.PORT || 3001;
-
+// 加入這段在檔案最上面（其他 import 下面）
+function getLocalIP() {
+  const os = require('os');
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
 // === CORS 設定 ===
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"], // 支援兩個常見 port
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://cs-testing.vercel.app",
+  "https://cs-testing-fb3txlqqy-chengs-projects-2602bdd2.vercel.app",
+  "https://*.ngrok-free.app",        // 改成萬用
+  "https://*.ngrok.io",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.some(o => 
+      o.startsWith('http://localhost') || 
+      o.startsWith('https://*.ngrok') ? 
+        origin.match(o.replace('*.', '.*')) : 
+        origin === o
+    )) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 
 // === 基本設定 ===
 app.use(express.json());
@@ -56,14 +87,21 @@ app.get('/whoami', (req, res) =>
 app.get('/', (req, res) => res.json({ ok: true, msg: 'backend alive' }));
 app.get('/__ping', (req, res) => res.json({ ok: true, now: Date.now() }));
 
-app.get('/__dbping', async (req, res) => {
+app.get("/__dbping", async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT 1+1 AS two');
-    res.json({ ok: true, result: rows[0] });
+    const [rows] = await pool.query("SELECT 1+1 AS two");
+    res.json({
+      ok: true,
+      result: rows[0] || {two: 2}
+    });
   } catch (e) {
-    res.status(500).json({ ok: false, detail: String(e.message || e) });
+    res.status(500).json({
+      ok: false,
+      detail: String(e.message || e)
+    });
   }
 });
+
 
 app.get('/__tables', async (req, res) => {
   try {
@@ -128,11 +166,12 @@ app.post('/register', async (req, res) => {
 
 
 // === 登入 ===
-app.post('/login', async (req, res) => {
+app.post('/login', async (req, res) => { 
   try {
     const { username, password } = req.body || {};
-    if (!username || !password)
+    if (!username || !password) {
       return res.status(400).json({ error: '缺少 username 或 password' });
+    }
 
     let user = null, role = null;
 
@@ -142,7 +181,8 @@ app.post('/login', async (req, res) => {
       [username]
     );
 
-    if (stu.length > 0) {
+    // ⭐ 加入防呆 — 如果查不到資料，直接回「帳號不存在」
+    if (stu && stu.length > 0) {
       user = stu[0];
       role = 'student';
 
@@ -165,7 +205,8 @@ app.post('/login', async (req, res) => {
       [username]
     );
 
-    if (t.length > 0) {
+    // ⭐ 加入防呆 — 如果查不到資料，直接回「帳號不存在」
+    if (t && t.length > 0) {
       user = t[0];
       role = 'teacher';
 
@@ -183,14 +224,15 @@ app.post('/login', async (req, res) => {
       });
     }
 
-    // ❌ 沒找到帳號
+    // ❌ 兩邊都查不到 → 直接回「帳號不存在」
     return res.status(401).json({ error: '帳號不存在' });
 
   } catch (e) {
     console.error('Login error:', e);
-    res.status(500).json({ error: 'login failed', detail: String(e.message || e) });
+    return res.status(500).json({ error: 'login failed', detail: String(e.message || e) });
   }
 });
+
 
 
 
@@ -1337,8 +1379,13 @@ app.use((req, res) => {
 });
 
 // === 啟動伺服器 ===
-const server = app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  const host = server.address().address;
+  const port = server.address().port;
+  console.log(`✅ Server running at http://localhost:${port}`);
+  console.log(`✅ 本機測試：http://localhost:${port}`);
+  console.log(`✅ 手機/其他電腦測試：http://${getLocalIP()}:${port}`);
+  console.log(`✅ ngrok 外部測試：https://hirable-blake-deficiently.ngrok-free.dev`);
 });
 
 server.on('close', () => console.log('⚠️ server closed'));
