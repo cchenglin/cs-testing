@@ -120,7 +120,7 @@ return (
 
       <div style={{ marginTop: 20, display: "flex", gap: "10px" }}>
   <button type="submit" className="btn btn-success">
-    💾 儲存變更
+    儲存變更
   </button>
 
   <button
@@ -128,7 +128,7 @@ return (
     onClick={() => navigate("/student/profile")}
     className="btn btn-warning"
   >
-    🔙 取消
+    取消
   </button>
 </div>
 

@@ -37,7 +37,7 @@ export default function CreateCoursePage({ teacher }) {
 
  return (
     <div className="page">
-      <h1 className="section-title">🆕 建立新課程</h1>
+      <h1 className="section-title">建立新課程</h1>
 
       <form
         onSubmit={handleSubmit}
@@ -49,7 +49,7 @@ export default function CreateCoursePage({ teacher }) {
         }}
       >
         <label>
-          <span>📘 課程名稱：</span>
+          <span>課程名稱：</span>
           <input
             type="text"
             className="input"
@@ -61,7 +61,7 @@ export default function CreateCoursePage({ teacher }) {
         </label>
 
         <label>
-          <span>📝 課程描述（可選）：</span>
+          <span>課程描述（可選）：</span>
           <textarea
             className="input"
             placeholder="輸入課程簡介或重點..."

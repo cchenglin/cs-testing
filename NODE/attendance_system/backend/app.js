@@ -9,6 +9,7 @@ const pool = require('./db');
 const { writeOnchainByHash, readSeenByHash, getAbiFunctions } = require('./blockchain');
 const { ethers } = require("ethers");
 const RPC_URL = process.env.RPC_URL;
+const verifyCampusIP = require("./middlewares/verifyCampusIP");
 
 // ⭐ 新增：用 ethers 建一個 provider 來查交易資訊（本機 Hardhat）
 let txProvider = null;
@@ -55,26 +56,24 @@ const allowedOrigins = [
   "http://localhost:5174",
   "https://cs-testing.vercel.app",
   "https://cs-testing-fb3txlqqy-chengs-projects-2602bdd2.vercel.app",
-  "https://*.ngrok-free.app",        // 改成萬用
-  "https://*.ngrok.io",
+  "https://hirable-blake-deficiently.ngrok-free.dev"
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.some(o => 
-      o.startsWith('http://localhost') || 
-      o.startsWith('https://*.ngrok') ? 
-        origin.match(o.replace('*.', '.*')) : 
-        origin === o
-    )) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
-
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Postman 或 curl 沒有 origin，直接允許
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
+// >>> 在這裡註冊
+app.use(verifyCampusIP);
 
 // === 基本設定 ===
 app.use(express.json());
@@ -542,6 +541,7 @@ app.post("/course/:course_id/attendance/stop", async (req, res) => {
 
 
 // ✅ 取得課程所有學生的出席紀錄（含場次時間 + 上鏈資訊）
+// 取得課程所有學生的出席紀錄（含上鏈資訊 + IP 驗證結果）
 app.get("/course/:course_id/attendance/records", async (req, res) => {
   const { course_id } = req.params;
   try {
@@ -555,7 +555,7 @@ app.get("/course/:course_id/attendance/records", async (req, res) => {
          s.grade,
          s.classroom,
          a.status,
-         -- ✅ 日期與時間修正：若 date/time 為 NULL，顯示簽到時間
+         -- 日期與時間（signed_at 優先）
          COALESCE(
            DATE_FORMAT(a.date, '%Y/%m/%d'),
            DATE_FORMAT(a.signed_at, '%Y/%m/%d')
@@ -566,14 +566,17 @@ app.get("/course/:course_id/attendance/records", async (req, res) => {
          ) AS display_time,
          a.session_id,
          sess.started_at,
-         -- ✅ 顯示上鏈資訊（若需要可顯示在老師端畫面）
+         -- 上鏈相關欄位
          a.data_hash,
          a.onchain_txhash,
-         a.ipfs_cid
+         a.ipfs_cid,
+         -- 重要：IP 驗證結果（給前端顯示 V / X 用）
+         a.client_ip,
+         a.ip_valid,
+         a.signer_address
        FROM attendance a
        LEFT JOIN students s 
          ON a.student_id = s.student_id
-         OR a.student_id = CAST(s.username AS UNSIGNED)
        LEFT JOIN attendance_sessions sess 
          ON a.session_id = sess.id
        WHERE a.course_id = ?
@@ -584,10 +587,14 @@ app.get("/course/:course_id/attendance/records", async (req, res) => {
     );
 
     console.log(`[Fetch Attendance Records] found ${rows.length} rows`);
-    res.json(rows);
+    res.json(rows); // 一定回傳陣列，前端 .map 就不會爆
+
   } catch (err) {
-    console.error("❌ [Fetch Attendance Records]", err);
-    res.status(500).json({ error: "無法取得出席紀錄" });
+    console.error("Fetch Attendance Records Error:", err);
+    res.status(500).json({ 
+      error: "無法取得出席紀錄", 
+      detail: err.message 
+    });
   }
 });
 
@@ -782,7 +789,7 @@ app.get("/course/:course_id/attendance/status", async (req, res) => {
 
 
 // ✅ 學生簽到：確保時間以台灣時區（UTC+8）寫入
-app.post("/course/:course_id/attendance/checkin", async (req, res) => {
+app.post("/course/:course_id/attendance/checkin",verifyCampusIP, async (req, res) => {
   const { course_id } = req.params;
   let { student_id } = req.body;
 
@@ -854,13 +861,13 @@ app.post("/nonces/issue", async (req, res) => {
 });
 
 
-// 簽到並上鏈（Step C）
-app.post("/attendance/signin", async (req, res) => {
+// 簽到並上鏈（Step C） 
+app.post("/attendance/signin", verifyCampusIP, async (req, res) => {
   try {
     const { student_id, course_id, nonceId, signedAt, ipfsCid } = req.body || {};
     if (!student_id || !course_id || !nonceId || !signedAt)
       return res.status(400).json({ error: "缺少必要欄位" });
-
+    
     // ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
     // ⭐ 新增：提取前端傳來的 message、signature
     // ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
@@ -914,9 +921,21 @@ app.post("/attendance/signin", async (req, res) => {
 
     console.log("🟢 Signature verified OK:", recoveredAddress);
 
+    // ⚠️ 修正: 預先取出課程的當前 session_id，避免 SQL 子查詢錯誤
+    const [[courseRow]] = await pool.query(
+        "SELECT current_session_id FROM courses WHERE id = ?",
+        [course_id]
+    );
+    if (!courseRow || !courseRow.current_session_id) {
+        // 如果找不到 session_id，這會返回 400，而不是 500
+        return res.status(400).json({ error: "課程當前 session_id 遺失或無效" });
+    }
+    const current_session_id = courseRow.current_session_id;
+
     // ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
-    // ⭐ ⚠️ 以下為你的原始程式碼（完全不動） ⚠️
+    // ⭐ 新增：抓取 client_ip
     // ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+    const client_ip = req.client_ip;
 
     // 驗證 nonce 是否有效
     const [[nonceRow]] = await pool.query(
@@ -933,47 +952,70 @@ app.post("/attendance/signin", async (req, res) => {
       nonce: nonceRow.nonce,
       ipfsCid,
       signedAt,
+      client_ip,
+      ip_valid: req.isCampusIP ? 1 : 0
     });
     const data_hash = crypto.createHash("sha256").update(payloadStr).digest("hex");
 
-    // 檢查是否已有預設 absent 紀錄
+    // 檢查是否已有預設 absent 紀錄 (使用預先取出的 current_session_id)
     const [existing] = await pool.query(
-      "SELECT id FROM attendance WHERE student_id=? AND course_id=? AND session_id = (SELECT current_session_id FROM courses WHERE id=?) ORDER BY id DESC LIMIT 1",
-      [student_id, course_id, course_id]
+      "SELECT id FROM attendance WHERE student_id=? AND course_id=? AND session_id = ? ORDER BY id DESC LIMIT 1",
+      [student_id, course_id, current_session_id]
     );
 
     let attendanceId;
     if (existing.length > 0) {
       attendanceId = existing[0].id;
+      // 正確的樣式 (移除所有不必要的行首空白)
       await pool.query(
         `UPDATE attendance 
-         SET status='present',
-             signed_at=FROM_UNIXTIME(?),
-             ipfs_cid=?,
-             data_hash=?
-         WHERE id=?`,
-        [signedAt, ipfsCid, data_hash, attendanceId]
+SET status='present',
+signed_at=FROM_UNIXTIME(?),
+ipfs_cid=?,
+data_hash=?, 
+signer_address=?,
+client_ip=?,
+ip_valid=?
+WHERE id=?`,
+        [signedAt, ipfsCid, data_hash, recoveredAddress, client_ip, req.isCampusIP ? 1 : 0, attendanceId]
       );
     } else {
+      // 修正：使用變數 current_session_id
       const [ins] = await pool.query(
         `INSERT INTO attendance 
-         (student_id, course_id, signed_at, ipfs_cid, data_hash, status)
-         VALUES (?, ?, FROM_UNIXTIME(?), ?, ?, 'present')`,
-        [student_id, course_id, signedAt, ipfsCid, data_hash]
+        (student_id, course_id, signed_at, ipfs_cid, data_hash, status, signer_address, client_ip, ip_valid, session_id)
+        VALUES (?, ?, FROM_UNIXTIME(?), ?, ?, 'present', ?, ?, ?, ?)`,
+        [student_id, course_id, signedAt, ipfsCid, data_hash, recoveredAddress, client_ip,req.isCampusIP ? 1 : 0, current_session_id]
       );
       attendanceId = ins.insertId;
     }
 
-    // 上鏈
-    console.log(`📤 [上鏈中] data_hash = 0x${data_hash}`);
-    const txHash = await writeOnchainByHash("0x" + data_hash);
-    console.log(`⏳ 等待區塊確認中... txHash = ${txHash}`);
+    let txHash = null;
 
-    // 更新上鏈結果
-    await pool.query(
-      "UPDATE attendance SET onchain_txhash=?, data_hash=CONCAT('0x', TRIM(data_hash)) WHERE id=?",
-      [txHash, attendanceId]
-    );
+    // ⭐⭐⭐ 修正: 區塊鏈操作獨立的 Try/Catch 區塊 ⭐⭐⭐
+    try {
+      // 上鏈
+      console.log(`📤 [上鏈中] data_hash = 0x${data_hash}`);
+      txHash = await writeOnchainByHash("0x" + data_hash);
+      console.log(`⏳ 等待區塊確認中... txHash = ${txHash}`);
+
+      // 更新上鏈結果，避免多加 0x
+      await pool.query(
+        "UPDATE attendance SET onchain_txhash=?, data_hash=? WHERE id=?",
+        [txHash, "0x" + data_hash, attendanceId]
+      );
+    } catch (onchainError) {
+      // 如果區塊鏈失敗，我們打印出最詳細的錯誤，然後繼續執行
+      console.error("❌ ONCHAIN ERROR: writeOnchainByHash failed!", onchainError);
+      // 為了讓簽到流程繼續，我們將 txHash 設置為錯誤標記
+      txHash = `ONCHAIN_FAILED: ${onchainError.message}`; 
+
+      // 註解掉：這行會嘗試寫入一個過長的錯誤訊息到資料庫，可能導致另一個 500 錯誤
+      // await pool.query("UPDATE attendance SET onchain_txhash=? WHERE id=?", [txHash, attendanceId]);
+      
+      // 讓資料庫中 onchain_txhash 保持 NULL 或上次的值，避免寫入過長字符串導致的錯誤。
+    }
+    // ⭐⭐⭐ 區塊鏈 Try/Catch 結束 ⭐⭐⭐
 
     // 將 nonce 標記為已使用
     await pool.query("UPDATE nonces SET used=1 WHERE id=?", [nonceId]);
@@ -983,9 +1025,15 @@ app.post("/attendance/signin", async (req, res) => {
       attendance_id: attendanceId,
       data_hash: "0x" + data_hash,
       onchain_txhash: txHash,
+      client_ip,    // <- 加這行
+      ip_valid: req.isCampusIP === true,    // <- 加這行
+      signature,
+      recovered_address: recoveredAddress,
+      expected_address: stu.public_key,
     });
   } catch (e) {
-    console.error("❌ signin error:", e);
+    // ⭐⭐ 偵錯重點：現在所有的未捕獲錯誤都會在這裡打印 ⭐⭐
+    console.error("❌ signin error (Fatal):", e);
     res.status(500).json({ error: "signin failed", detail: String(e.message || e) });
   }
 });
@@ -1184,7 +1232,10 @@ app.get("/onchain/session/:session_id", async (req, res) => {
         st.name,
         a.status,
         a.data_hash,
-        a.onchain_txhash
+        a.onchain_txhash,
+        a.signer_address,
+        a.client_ip,        -- 這一行一定要加
+        a.ip_valid          -- 這一行一定要加
       FROM attendance a
       JOIN students st ON st.student_id = a.student_id
       WHERE a.session_id = ?
@@ -1234,6 +1285,9 @@ app.get("/onchain/session/:session_id", async (req, res) => {
         verifiedOnChain,
         blockNumber,
         gasUsed,
+        client_ip: r.client_ip,      // ✅ 新增
+        signer_address: r.signer_address, // ✅ 新增
+        ip_valid: r.ip_valid === 1,     // MySQL 是 1/0，轉成 true/false
       });
     }
 
@@ -1276,7 +1330,12 @@ app.get("/course/:course_id/session/:session_id/records", async (req, res) => {
 
     // 2️⃣ 抓該次 session 的出席紀錄
     const [records] = await pool.query(
-      `SELECT a.*, s.username, s.name
+      `SELECT 
+        a.id, a.student_id, a.signed_at, a.status, a.onchain_txhash, a.data_hash, 
+        a.signer_address,  /* ⭐ 修正點 1: 新增 signer_address */
+        a.client_ip,       /* ⭐ 修正點 2: 新增 client_ip */
+        s.username, 
+        s.name
        FROM attendance a
        JOIN students s ON a.student_id = s.student_id
        WHERE a.course_id = ? AND a.session_id = ?
@@ -1305,7 +1364,10 @@ app.get("/course/:course_id/session/:session_id/records", async (req, res) => {
           status: r.status,
           data_hash: r.data_hash,
           onchain_seen: onchain,
-          onchain_txhash: r.onchain_txhash || null
+          onchain_txhash: r.onchain_txhash || null,
+          // ⭐ 修正點 3: 新增兩個欄位到最終回傳物件
+          client_ip: r.client_ip,          
+          signer_address: r.signer_address,
         };
       })
     );
@@ -1370,6 +1432,17 @@ app.get("/attendance/verify/:attendance_id", async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: "verify failed", detail: String(e.message) });
   }
+});
+
+// 🔍 Teacher 查看：顯示調用 verifyCampusIP 的完整結果
+app.get("/debug/ip-check", verifyCampusIP, (req, res) => {
+  res.json({
+    ok: true,
+    ip: req.client_ip,
+    isCampusIP: req.isCampusIP,  // 加這行，讓老師端測試V/X
+    message: req.isCampusIP ? "V: 此 IP 屬於校園允許範圍" : "X: 此 IP 不符合校園範圍",
+    allowedRanges: allowedRanges.map(re => re.source),  // 顯示regex
+  });
 });
 
 

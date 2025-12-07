@@ -24,7 +24,7 @@ export default function TeacherHome({ user, onLogout, attendanceList }) {
 
 return (
   <div className="page">
-    <h1>👩‍🏫 老師主頁</h1>
+    <h1>老師主頁</h1>
     <p className="dim">
       歡迎回來，<b>{user.username}</b>
     </p>
@@ -35,16 +35,16 @@ return (
         className="btn btn-primary"
         onClick={() => navigate("/create-course")}
       >
-        ➕ 建立新課程
+        建立新課程
       </button>
 
       <button className="btn btn-danger" onClick={onLogout}>
-        🚪 登出
+         登出
       </button>
     </div>
 
     {/* 📚 課程列表 */}
-    <h2 className="section-title">📚 我的課程</h2>
+    <h2 className="section-title">我的課程</h2>
     {courses.length === 0 ? (
       <p className="dim">尚未建立任何課程</p>
     ) : (

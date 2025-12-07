@@ -41,7 +41,7 @@ export default function StudentHome({ username, onLogout }) {
       </button>
     </div>
 
-    <h2 className="section-title">📚 已加入的課程</h2>
+    <h2 className="section-title">已加入的課程</h2>
     {courses.length === 0 ? (
       <p className="dim">尚未加入任何課程</p>
     ) : (
@@ -56,7 +56,7 @@ export default function StudentHome({ username, onLogout }) {
               {course.course_name}（{course.course_code}）
             </div>
             <div className="item-sub">
-              👨‍🏫 授課老師：{course.teacher_name || "未知"}
+              授課老師：{course.teacher_name || "未知"}
             </div>
           </li>
         ))}

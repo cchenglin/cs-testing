@@ -181,6 +181,12 @@ export default function CourseDetailPage() {
         `http://localhost:3001/course/${course_id}/attendance/records`
       );
       const data = await res.json();
+      // 防呆：如果後端掛了，至少不要讓前端 crash
+      if (!Array.isArray(data)) {
+        console.error("後端回傳不是陣列:", data);
+        setAttendanceRecords([]);
+        return;
+      }
 
       const enhanced = await Promise.all(
         data.map(async (rec) => {
@@ -261,7 +267,7 @@ export default function CourseDetailPage() {
   // ========= UI =========
   return (
     <div className="page">
-      <h1 className="section-title">📘 課程詳細資料</h1>
+      <h1 className="section-title">課程詳細資料</h1>
 
       {/* 課程資訊 */}
       {course && (
@@ -276,7 +282,7 @@ export default function CourseDetailPage() {
       <div className="card mb-20">
         {!isAttendanceOpen ? (
           <div className="row">
-            <label>⏱️ 點名時長（秒）：</label>
+            <label>點名時長（秒）：</label>
             <input
               type="number"
               className="input"
@@ -287,7 +293,7 @@ export default function CourseDetailPage() {
               style={{ width: "100px" }}
             />
             <button className="btn btn-success" onClick={handleStartAttendance}>
-              ▶️ 開始點名
+              開始點名
             </button>
 
             <button
@@ -297,14 +303,14 @@ export default function CourseDetailPage() {
                 window.open(`http://localhost:3001/onchain/debug/${course_id}`, "_blank")
               }
             >
-              🧩 檢視上鏈狀態
+              檢視上鏈狀態
             </button>
           </div>
         ) : (
           <div className="row">
             <span style={{ color: "#f87171" }}>🔴 點名進行中（剩餘 {countdown} 秒）</span>
             <button className="btn btn-danger" onClick={handleStopAttendance}>
-              ⏹️ 結束點名
+              結束點名
             </button>
           </div>
         )}
@@ -313,7 +319,7 @@ export default function CourseDetailPage() {
 
 
       {/* 學生 / 每次點名狀態 */}
-      <h2 className="section-title">👥 學生名單與出席紀錄</h2>
+      <h2 className="section-title">學生名單與出席紀錄</h2>
 
       <div className="table-wrap">
         <table className="table">
@@ -396,7 +402,7 @@ export default function CourseDetailPage() {
       {/* 📊 出席率折線圖 */}
       {attendanceSessions.length > 0 && classSize > 0 && (
         <div className="card mb-20" style={{ marginTop: "20px" }}>
-          <h2 className="section-title">📊 出席率趨勢（每次點名）</h2>
+          <h2 className="section-title">出席率趨勢（每次點名）</h2>
 
           <div className="chart-container">
             <Line data={attendanceChartData} options={attendanceChartOptions} />

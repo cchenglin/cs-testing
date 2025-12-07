@@ -92,7 +92,7 @@ return (
             <div className="item-title">
               {course.course_name}（代碼：{course.course_code}）
             </div>
-            <div className="item-sub">👨‍🏫 授課老師：{course.teacher_name || "未知"}</div>
+            <div className="item-sub">授課老師：{course.teacher_name || "未知"}</div>
           </li>
         ))}
       </ul>

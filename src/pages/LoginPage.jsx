@@ -148,7 +148,7 @@ function LoginPage({ onLogin }) {
       <div className="animated-bg"></div>
       <div className="login-container">
         <h1 className="section-title mb-20">
-          {isRegister ? "🧑‍🎓 學生註冊" : "🔐 登入系統"}
+          {isRegister ? "學生註冊" : "登入系統"}
         </h1>
 
         <form onSubmit={handleSubmit} className="login-form" style={formStyle}>
@@ -216,17 +216,7 @@ function LoginPage({ onLogin }) {
             </>
           )}
 
-          {!isRegister && (
-            <select
-              className="input"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              disabled={loading}
-            >
-              <option value="student">🎓 學生</option>
-              <option value="teacher">👩‍🏫 老師</option>
-            </select>
-          )}
+
 
           <button type="submit" className="btn btn-primary mt-20" disabled={loading}>
             {loading ? "登入中..." : isRegister ? "註冊" : "登入"}

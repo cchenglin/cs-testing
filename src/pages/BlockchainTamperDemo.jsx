@@ -38,12 +38,12 @@ export default function BlockchainTamperDemo() {
 
   // 🔢 升級版動畫步驟（含 Merkle Tree 結構）
   const steps = [
-    `📱 學生 ${student} 發起簽到請求`,
-    `📝 產生 nonce + timestamp ➤ ${rawData}`,
-    `🔐 SHA256 哈希計算 ➤ ${sha256Hash}`,
-    `🧬 Merkle Tree 建構中...（2筆出席紀錄）`,
-    `⛓️ 寫入 Block #${blockNumber} ➤ txHash: ${txHash}`,
-    `🔒 產生 Merkle Root ➤ ${merkleRoot}`,
+    `學生 ${student} 發起簽到請求`,
+    `產生 nonce + timestamp ➤ ${rawData}`,
+    `SHA256 哈希計算 ➤ ${sha256Hash}`,
+    `Merkle Tree 建構中...（2筆出席紀錄）`,
+    `寫入 Block #${blockNumber} ➤ txHash: ${txHash}`,
+    `產生 Merkle Root ➤ ${merkleRoot}`,
   ];
 
   // ⏳ 每 2.2 秒自動播放
@@ -96,10 +96,10 @@ export default function BlockchainTamperDemo() {
       {phase >= 4 && (
         <div className="chain-visual">
           <div className={`block ${phase >= 4 ? "visible zoom" : ""}`}>
-            <h3>🧱 Block #{blockNumber}</h3>
-            <p><b>📄 TxHash：</b> <span className="mono">{txHash}</span></p>
-            <p><b>🔗 data_hash：</b> <span className="mono">{dataHash}</span></p>
-            <p><b>⛽ Gas Used：</b> {gasUsed}</p>
+            <h3>Block #{blockNumber}</h3>
+            <p><b>TxHash：</b> <span className="mono">{txHash}</span></p>
+            <p><b>data_hash：</b> <span className="mono">{dataHash}</span></p>
+            <p><b>Gas Used：</b> {gasUsed}</p>
           </div>
         </div>
       )}
@@ -117,7 +117,7 @@ export default function BlockchainTamperDemo() {
 
             {/* 🛡 原始鏈上紀錄區塊 */}
             <div className="block-compare block-original secure-glow">
-            <h3>🧱 真實紀錄（鏈上）</h3>
+            <h3>真實紀錄（鏈上）</h3>
             <p><b>TxHash：</b><span className="mono">{txHash}</span></p>
             <p><b>Signer Address：</b> <span className="mono highlight">{stuPublicKey}</span></p>
             <p><b>Stored Hash：</b><span className="mono">{dataHash}</span></p>
@@ -141,7 +141,7 @@ export default function BlockchainTamperDemo() {
         {phase >= steps.length - 1 && signature && recoveredAddress && expectedAddress && (
         <div className="signature-verify-container">
 
-            <h2 className="verify-title">🔍 簽章驗證 — Signature ➜ Address 比對</h2>
+            <h2 className="verify-title">簽章驗證 — Signature ➜ Address 比對</h2>
 
             <div className="verify-flow">
             <div className="verify-box">
@@ -152,14 +152,14 @@ export default function BlockchainTamperDemo() {
             <div className="arrow-flow">⇩ Recover</div>
 
             <div className="verify-box">
-                <h4>🔑 Recovered Address</h4>
+                <h4>Recovered Address</h4>
                 <p className="mono highlight">{recoveredAddress}</p>
             </div>
 
             <div className="arrow-flow">⇩ 比對 DB</div>
 
             <div className="verify-box">
-                <h4>📦 DB 存的 Student Public Key</h4>
+                <h4>DB 存的 Student Public Key</h4>
                 <p className="mono highlight">{expectedAddress}</p>
             </div>
 
@@ -185,7 +185,7 @@ export default function BlockchainTamperDemo() {
           ⬅ 返回上一頁
         </button>
         <button className="btn btn-primary" onClick={() => setPhase(0)}>
-          🔄 重新播放動畫
+         重新播放動畫
         </button>
       </div>
     </div>
